@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS appointments;
+DROP TABLE IF EXISTS time_slots;
+DROP TABLE IF EXISTS employees;
+DROP TABLE IF EXISTS organizations;
+DROP TABLE IF EXISTS users;
