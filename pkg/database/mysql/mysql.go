@@ -5,7 +5,10 @@ import (
 	"context"
 	"fmt"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -13,7 +16,7 @@ type Dialect struct {
 	DB *sqlx.DB
 }
 
-func newMySQLDialect(ctx context.Context, cfg *model.MySQLConfig) *Dialect {
+func NewMySQLDialect(ctx context.Context, cfg *model.MySQLConfig) *Dialect {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&tls=%s",
 		cfg.Username,
 		cfg.Password,
