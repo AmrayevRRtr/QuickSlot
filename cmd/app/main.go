@@ -24,8 +24,14 @@ func main() {
 	appointmentService := service.NewAppointmentService(appointmentRepo)
 	appointmentHandler := handler.NewAppointmentHandler(appointmentService)
 
+	slotRepo := repository.NewSlotRepository(dialect)
+	slotService := service.NewSlotService(slotRepo)
+	slotHandler := handler.NewSlotHandler(slotService)
+
 	mux := http.NewServeMux()
 
+	mux.Handle("/slots/generate", middleware.AuthMiddleware(http.HandlerFunc(slotHandler.Generate)))
+	mux.HandleFunc("/slots/available", slotHandler.GetAvailableByEmployee)
 	mux.Handle("/appointments/book", middleware.AuthMiddleware(http.HandlerFunc(appointmentHandler.Book)))
 	mux.HandleFunc("/register", authHandler.Register)
 	mux.HandleFunc("/login", authHandler.Login)

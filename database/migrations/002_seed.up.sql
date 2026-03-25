@@ -14,6 +14,10 @@ INSERT INTO employees (name, organization_id)
 VALUES
     ('Dr. John', 1);
 
+INSERT INTO employees (name, organization_id)
+VALUES
+    ('Dr. Dre', 1);
+
 -- slots
 INSERT INTO time_slots (employee_id, start_time, end_time, is_booked)
 VALUES
