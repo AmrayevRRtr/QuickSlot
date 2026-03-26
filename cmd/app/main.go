@@ -5,45 +5,125 @@ import (
 	"QuickSlot/internal/middleware"
 	"QuickSlot/internal/repository"
 	"QuickSlot/internal/service"
+	"QuickSlot/internal/worker"
 	"QuickSlot/pkg/database/mysql"
+	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func main() {
-
 	cfg := loadConfig()
 
 	dialect := mysql.NewMySQLDialect(nil, cfg)
 
+	// repos
 	userRepo := repository.NewUserRepository(dialect)
-	authService := service.NewAuthService(userRepo)
-	authHandler := handler.NewAuthHandler(authService)
-
 	appointmentRepo := repository.NewAppointmentRepository(dialect)
-	appointmentService := service.NewAppointmentService(appointmentRepo)
-	appointmentHandler := handler.NewAppointmentHandler(appointmentService)
-
 	slotRepo := repository.NewSlotRepository(dialect)
+	orgRepo := repository.NewOrganizationRepository(dialect)
+	empRepo := repository.NewEmployeeRepository(dialect)
+	reviewRepo := repository.NewReviewRepository(dialect)
+
+	// services
+	authService := service.NewAuthService(userRepo)
+	appointmentService := service.NewAppointmentService(appointmentRepo)
 	slotService := service.NewSlotService(slotRepo)
+	orgService := service.NewOrganizationService(orgRepo)
+	empService := service.NewEmployeeService(empRepo)
+	reviewService := service.NewReviewService(reviewRepo)
+
+	// handlers
+	authHandler := handler.NewAuthHandler(authService)
+	appointmentHandler := handler.NewAppointmentHandler(appointmentService)
 	slotHandler := handler.NewSlotHandler(slotService)
+	orgHandler := handler.NewOrganizationHandler(orgService)
+	empHandler := handler.NewEmployeeHandler(empService)
+	reviewHandler := handler.NewReviewHandler(reviewService)
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/slots/generate", middleware.AuthMiddleware(http.HandlerFunc(slotHandler.Generate)))
-	mux.HandleFunc("/slots/available", slotHandler.GetAvailableByEmployee)
-	mux.Handle("/appointments/book", middleware.AuthMiddleware(http.HandlerFunc(appointmentHandler.Book)))
-	mux.Handle("/appointments/cancel", middleware.AuthMiddleware(http.HandlerFunc(appointmentHandler.Cancel)))
-	mux.Handle("/appointments/history", middleware.AuthMiddleware(http.HandlerFunc(appointmentHandler.History)))
+	// auth
 	mux.HandleFunc("/register", authHandler.Register)
 	mux.HandleFunc("/login", authHandler.Login)
 
-	protected := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	// protected test
+	mux.Handle("/me", middleware.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("protected route"))
-	})
+	})))
 
-	mux.Handle("/me", middleware.AuthMiddleware(protected))
+	// slots
+	mux.Handle("/slots/generate", middleware.AuthMiddleware(
+		middleware.AdminOnly(http.HandlerFunc(slotHandler.Generate))))
+	mux.HandleFunc("/slots/available", slotHandler.GetAvailableByEmployee)
 
-	log.Println("server started on :8080")
-	http.ListenAndServe(":8080", mux)
+	// appointments
+	mux.Handle("/appointments/book", middleware.AuthMiddleware(http.HandlerFunc(appointmentHandler.Book)))
+	mux.Handle("/appointments/cancel", middleware.AuthMiddleware(http.HandlerFunc(appointmentHandler.Cancel)))
+	mux.Handle("/appointments/history", middleware.AuthMiddleware(http.HandlerFunc(appointmentHandler.History)))
+
+	// organizations
+	mux.Handle("/organizations/create", middleware.AuthMiddleware(http.HandlerFunc(orgHandler.Create)))
+	mux.HandleFunc("/organizations", orgHandler.GetAll)
+	mux.HandleFunc("/organizations/get", orgHandler.GetByID)
+	mux.Handle("/organizations/update", middleware.AuthMiddleware(
+		middleware.AdminOnly(http.HandlerFunc(orgHandler.Update))))
+	mux.Handle("/organizations/delete", middleware.AuthMiddleware(
+		middleware.AdminOnly(http.HandlerFunc(orgHandler.Delete))))
+
+	// employees
+	mux.Handle("/employees/create", middleware.AuthMiddleware(
+		middleware.AdminOnly(http.HandlerFunc(empHandler.Create))))
+	mux.HandleFunc("/employees", empHandler.GetByOrganization)
+	mux.Handle("/employees/update", middleware.AuthMiddleware(
+		middleware.AdminOnly(http.HandlerFunc(empHandler.Update))))
+	mux.Handle("/employees/delete", middleware.AuthMiddleware(
+		middleware.AdminOnly(http.HandlerFunc(empHandler.Delete))))
+
+	// reviews
+	mux.Handle("/reviews/create", middleware.AuthMiddleware(http.HandlerFunc(reviewHandler.Create)))
+	mux.HandleFunc("/reviews", reviewHandler.GetByOrganization)
+	mux.Handle("/reviews/delete", middleware.AuthMiddleware(http.HandlerFunc(reviewHandler.Delete)))
+
+	// middleware chain
+	wrapped := middleware.LoggingMiddleware(middleware.CORSMiddleware(mux))
+
+	port := getEnv("SERVER_PORT", "8080")
+	server := &http.Server{
+		Addr:    ":" + port,
+		Handler: wrapped,
+	}
+
+	// background worker
+	done := make(chan struct{})
+	go worker.CleanExpiredSlots(dialect, 5*time.Minute, done)
+
+	// graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		log.Printf("server started on :%s", port)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("server error: %v", err)
+		}
+	}()
+
+	<-quit
+	log.Println("shutting down...")
+
+	close(done) // stop worker
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("shutdown error: %v", err)
+	}
+
+	log.Println("server stopped")
 }

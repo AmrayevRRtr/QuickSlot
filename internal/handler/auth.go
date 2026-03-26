@@ -5,6 +5,7 @@ import (
 	"QuickSlot/pkg/auth"
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 type AuthHandler struct {
@@ -29,13 +30,23 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Email == "" || !strings.Contains(req.Email, "@") {
+		http.Error(w, "invalid email", http.StatusBadRequest)
+		return
+	}
+	if len(req.Password) < 6 {
+		http.Error(w, "password must be at least 6 characters", http.StatusBadRequest)
+		return
+	}
+
 	id, err := h.service.Register(req.Email, req.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]any{
 		"user_id": id,
 	})
 }
@@ -61,7 +72,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	json.NewEncoder(w).Encode(map[string]any{
 		"token": token,
 	})
 }

@@ -63,6 +63,7 @@ func (h *SlotHandler) GetAvailableByEmployee(w http.ResponseWriter, r *http.Requ
 	employeeIDStr := r.URL.Query().Get("employee_id")
 	if employeeIDStr == "" {
 		http.Error(w, "employee_id is required", http.StatusBadRequest)
+		return
 	}
 
 	employeeID, err := strconv.ParseInt(employeeIDStr, 10, 64)
@@ -70,7 +71,7 @@ func (h *SlotHandler) GetAvailableByEmployee(w http.ResponseWriter, r *http.Requ
 		http.Error(w, "invalid employee_id", http.StatusBadRequest)
 		return
 	}
-	
+
 	from, err := parseOptionalTime(r.URL.Query().Get("from"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

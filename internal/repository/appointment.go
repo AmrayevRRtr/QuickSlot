@@ -10,9 +10,10 @@ import (
 )
 
 var (
-	ErrSlotAlreadyBooked = errors.New("slot is already booked")
-	ErrSlotNotFound      = errors.New("slot not found")
+	ErrSlotAlreadyBooked   = errors.New("slot is already booked")
+	ErrSlotNotFound        = errors.New("slot not found")
 	ErrAppointmentNotFound = errors.New("appointment not found")
+	ErrReviewNotFound      = errors.New("review not found")
 )
 
 type AppointmentRepository interface {

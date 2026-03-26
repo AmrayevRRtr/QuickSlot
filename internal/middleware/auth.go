@@ -12,6 +12,7 @@ import (
 type contextKey string
 
 const UserContextKey = contextKey("user")
+const RoleContextKey = contextKey("role")
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -19,6 +20,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		if authHeader == "" {
 			http.Error(w, "missing token", http.StatusUnauthorized)
+			return
 		}
 
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
@@ -41,9 +43,22 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		role, _ := claims["role"].(string)
 		userID := int64(userIDFloat)
 
 		ctx := context.WithValue(r.Context(), UserContextKey, userID)
+		ctx = context.WithValue(ctx, RoleContextKey, role)
 		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func AdminOnly(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		role, ok := r.Context().Value(RoleContextKey).(string)
+		if !ok || role != "ADMIN" {
+			http.Error(w, "admin access required", http.StatusForbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
 	})
 }
