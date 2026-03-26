@@ -1,9 +1,10 @@
 package service
 
 import (
+	"context"
+
 	"QuickSlot/internal/model"
 	"QuickSlot/internal/repository"
-	"context"
 )
 
 type OrganizationService struct {
@@ -15,6 +16,14 @@ func NewOrganizationService(r repository.OrganizationRepository) *OrganizationSe
 }
 
 func (s *OrganizationService) Create(ctx context.Context, name string, ownerID int64) (int64, error) {
+	exists, err := s.repo.ExistsByName(ctx, name)
+	if err != nil {
+		return 0, err
+	}
+	if exists {
+		return 0, repository.ErrConflict
+	}
+
 	org := &model.Organization{
 		Name:    name,
 		OwnerID: ownerID,
@@ -30,9 +39,8 @@ func (s *OrganizationService) GetByID(ctx context.Context, id int64) (*model.Org
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *OrganizationService) Update(ctx context.Context, id int64, name string) error {
-	org := &model.Organization{ID: id, Name: name}
-	return s.repo.Update(ctx, org)
+func (s *OrganizationService) Update(ctx context.Context, id int64, update *model.OrganizationUpdate) error {
+	return s.repo.Update(ctx, id, update)
 }
 
 func (s *OrganizationService) Delete(ctx context.Context, id int64) error {

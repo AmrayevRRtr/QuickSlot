@@ -34,7 +34,7 @@ func main() {
 	appointmentService := service.NewAppointmentService(appointmentRepo)
 	slotService := service.NewSlotService(slotRepo)
 	orgService := service.NewOrganizationService(orgRepo)
-	empService := service.NewEmployeeService(empRepo)
+	empService := service.NewEmployeeService(empRepo, orgRepo)
 	reviewService := service.NewReviewService(reviewRepo)
 
 	// handlers
