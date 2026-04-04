@@ -21,6 +21,14 @@ type registerRequest struct {
 	Password string `json:"password"`
 }
 
+// @Summary Register a new user
+// @Description Creates a new user with email and password
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body registerRequest true "Registration payload"
+// @Success 201 {object} map[string]interface{}
+// @Router /register [post]
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var req registerRequest
 
@@ -51,6 +59,14 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary User Login
+// @Description Returns a JWT token for valid credentials
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body registerRequest true "Login payload"
+// @Success 200 {object} map[string]interface{}
+// @Router /login [post]
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req registerRequest
 

@@ -1,12 +1,6 @@
 package main
 
 import (
-	"QuickSlot/internal/handler"
-	"QuickSlot/internal/middleware"
-	"QuickSlot/internal/repository"
-	"QuickSlot/internal/service"
-	"QuickSlot/internal/worker"
-	"QuickSlot/pkg/database/mysql"
 	"context"
 	"log"
 	"net/http"
@@ -14,7 +8,28 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	_ "QuickSlot/docs" // swagger documentation
+
+	httpSwagger "github.com/swaggo/http-swagger"
+	"golang.org/x/time/rate"
+
+	"QuickSlot/internal/handler"
+	"QuickSlot/internal/middleware"
+	"QuickSlot/internal/repository"
+	"QuickSlot/internal/service"
+	"QuickSlot/internal/worker"
+	"QuickSlot/pkg/database/mysql"
 )
+
+// @title QuickSlot API
+// @version 1.0
+// @description Backend for appointment booking service.
+// @host localhost:8080
+// @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 func main() {
 	cfg := loadConfig()
@@ -46,6 +61,9 @@ func main() {
 	reviewHandler := handler.NewReviewHandler(reviewService)
 
 	mux := http.NewServeMux()
+
+	// Swagger documentation route
+	mux.HandleFunc("/swagger/", httpSwagger.WrapHandler)
 
 	// auth
 	mux.HandleFunc("/register", authHandler.Register)
@@ -89,8 +107,9 @@ func main() {
 	mux.HandleFunc("/reviews", reviewHandler.GetByOrganization)
 	mux.Handle("/reviews/delete", middleware.AuthMiddleware(http.HandlerFunc(reviewHandler.Delete)))
 
-	// middleware chain
-	wrapped := middleware.LoggingMiddleware(middleware.CORSMiddleware(mux))
+	// middleware chain: RateLimit -> CORS -> Logging
+	rateLimitedMux := middleware.RateLimit(rate.Limit(10), 20)(mux) // 10 req/s, 20 burst
+	wrapped := middleware.LoggingMiddleware(middleware.CORSMiddleware(rateLimitedMux))
 
 	port := getEnv("SERVER_PORT", "8080")
 	server := &http.Server{

@@ -28,6 +28,10 @@ docker-up:
 docker-down:
 	docker-compose down
 
+# линтер
+lint:
+	golangci-lint run ./...
+
 # очистка
 clean:
 	rm -rf bin/ coverage.out
