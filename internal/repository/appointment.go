@@ -36,7 +36,7 @@ func (r *appointmentRepository) BookSlot(ctx context.Context, userID, slotID int
 		return nil, err
 	}
 
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var isBooked bool
 	err = tx.GetContext(ctx, &isBooked,
@@ -91,7 +91,7 @@ func (r *appointmentRepository) CancelBooking(ctx context.Context, userID, appoi
 		return err
 	}
 
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	var slotID int64
 	err = tx.GetContext(

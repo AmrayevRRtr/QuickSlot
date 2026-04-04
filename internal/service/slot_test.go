@@ -2,6 +2,7 @@ package service
 
 import (
 	"QuickSlot/internal/model"
+	"context"
 	"testing"
 	"time"
 )
@@ -30,7 +31,7 @@ func TestGenerateSlots(t *testing.T) {
 	svc := NewSlotService(repo)
 
 	date := time.Date(2026, 3, 25, 0, 0, 0, 0, time.UTC)
-	err := svc.GenerateSlots(nil, 1, date, 9, 12, 30)
+	err := svc.GenerateSlots(context.Background(), 1, date, 9, 12, 30)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -61,7 +62,7 @@ func TestGenerateSlotsEmployeeID(t *testing.T) {
 	svc := NewSlotService(repo)
 
 	date := time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC)
-	_ = svc.GenerateSlots(nil, 42, date, 10, 11, 30)
+	_ = svc.GenerateSlots(context.Background(), 42, date, 10, 11, 30)
 
 	for _, s := range repo.slots {
 		if s.EmployeeID != 42 {
@@ -75,7 +76,7 @@ func TestGenerateSlotsEmpty(t *testing.T) {
 	svc := NewSlotService(repo)
 
 	date := time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC)
-	err := svc.GenerateSlots(nil, 1, date, 10, 10, 30)
+	err := svc.GenerateSlots(context.Background(), 1, date, 10, 10, 30)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -54,7 +54,7 @@ func (h *SlotHandler) Generate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("slots generated"))
+	_, _ = w.Write([]byte("slots generated"))
 }
 
 func (h *SlotHandler) GetAvailableByEmployee(w http.ResponseWriter, r *http.Request) {
@@ -90,5 +90,5 @@ func (h *SlotHandler) GetAvailableByEmployee(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	json.NewEncoder(w).Encode(slots)
+	_ = json.NewEncoder(w).Encode(slots)
 }

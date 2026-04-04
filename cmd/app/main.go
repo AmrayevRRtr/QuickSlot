@@ -34,7 +34,7 @@ import (
 func main() {
 	cfg := loadConfig()
 
-	dialect := mysql.NewMySQLDialect(nil, cfg)
+	dialect := mysql.NewMySQLDialect(context.Background(), cfg)
 
 	// repos
 	userRepo := repository.NewUserRepository(dialect)
@@ -71,7 +71,7 @@ func main() {
 
 	// protected test
 	mux.Handle("/me", middleware.AuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("protected route"))
+		_, _ = w.Write([]byte("protected route"))
 	})))
 
 	// slots

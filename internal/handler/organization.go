@@ -50,7 +50,7 @@ func (h *OrganizationHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]any{"id": id})
+	_ = json.NewEncoder(w).Encode(map[string]any{"id": id})
 }
 
 func (h *OrganizationHandler) GetAll(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +62,7 @@ func (h *OrganizationHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(orgs)
+	_ = json.NewEncoder(w).Encode(orgs)
 }
 
 func (h *OrganizationHandler) GetByID(w http.ResponseWriter, r *http.Request) {
@@ -90,7 +90,7 @@ func (h *OrganizationHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(org)
+	_ = json.NewEncoder(w).Encode(org)
 }
 
 func (h *OrganizationHandler) Update(w http.ResponseWriter, r *http.Request) {
@@ -120,7 +120,7 @@ func (h *OrganizationHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]any{"updated": true})
+	_ = json.NewEncoder(w).Encode(map[string]any{"updated": true})
 }
 
 func (h *OrganizationHandler) Delete(w http.ResponseWriter, r *http.Request) {

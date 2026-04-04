@@ -8,7 +8,7 @@ import (
 )
 
 func loadConfig() *model.MySQLConfig {
-	godotenv.Load()
+	_ = godotenv.Load()
 
 	return &model.MySQLConfig{
 		Username: getEnv("DB_USER", "root"),

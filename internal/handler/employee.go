@@ -64,7 +64,7 @@ func (h *EmployeeHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]any{"id": id})
+	_ = json.NewEncoder(w).Encode(map[string]any{"id": id})
 }
 
 func (h *EmployeeHandler) GetByOrganization(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +88,7 @@ func (h *EmployeeHandler) GetByOrganization(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	json.NewEncoder(w).Encode(employees)
+	_ = json.NewEncoder(w).Encode(employees)
 }
 
 func (h *EmployeeHandler) Update(w http.ResponseWriter, r *http.Request) {
@@ -124,7 +124,7 @@ func (h *EmployeeHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]any{"updated": true})
+	_ = json.NewEncoder(w).Encode(map[string]any{"updated": true})
 }
 
 func (h *EmployeeHandler) Delete(w http.ResponseWriter, r *http.Request) {

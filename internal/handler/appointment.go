@@ -50,7 +50,7 @@ func (h *AppointmentHandler) Book(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(appointment)
+	_ = json.NewEncoder(w).Encode(appointment)
 }
 
 func (h *AppointmentHandler) Cancel(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +73,7 @@ func (h *AppointmentHandler) Cancel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]any{
+	_ = json.NewEncoder(w).Encode(map[string]any{
 		"cancelled": true,
 	})
 }
@@ -100,7 +100,7 @@ func (h *AppointmentHandler) History(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(items)
+	_ = json.NewEncoder(w).Encode(items)
 }
 
 func parseOptionalTime(v string) (*time.Time, error) {

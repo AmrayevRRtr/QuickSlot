@@ -39,7 +39,7 @@ func (h *ReviewHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]any{
+	_ = json.NewEncoder(w).Encode(map[string]any{
 		"review_id": id,
 	})
 }
@@ -65,7 +65,7 @@ func (h *ReviewHandler) GetByOrganization(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	json.NewEncoder(w).Encode(reviews)
+	_ = json.NewEncoder(w).Encode(reviews)
 }
 
 type deleteReviewRequest struct {
@@ -87,7 +87,7 @@ func (h *ReviewHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]any{
+	_ = json.NewEncoder(w).Encode(map[string]any{
 		"deleted": true,
 	})
 }

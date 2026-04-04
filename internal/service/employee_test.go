@@ -127,7 +127,7 @@ func TestEmployeeConflict(t *testing.T) {
 
 	orgID, _ := orgRepo.CreateOrg(ctx, &model.Organization{Name: "Org1"})
 
-	svc.Create(ctx, &model.Employee{Name: "E1", Email: "dup@test.com", OrganizationID: orgID})
+	_, _ = svc.Create(ctx, &model.Employee{Name: "E1", Email: "dup@test.com", OrganizationID: orgID})
 
 	_, err := svc.Create(ctx, &model.Employee{Name: "E2", Email: "dup@test.com", OrganizationID: orgID})
 	if !errors.Is(err, repository.ErrConflict) {
