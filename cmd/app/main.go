@@ -20,6 +20,7 @@ import (
 	"QuickSlot/internal/service"
 	"QuickSlot/internal/worker"
 	"QuickSlot/pkg/database/mysql"
+	appredis "QuickSlot/pkg/database/redis"
 )
 
 // @title QuickSlot API
@@ -44,12 +45,16 @@ func main() {
 	empRepo := repository.NewEmployeeRepository(dialect)
 	reviewRepo := repository.NewReviewRepository(dialect)
 
+	// redis
+	redisURL := getEnv("REDIS_URL", "localhost:6379")
+	redisClient := appredis.NewRedisClient(context.Background(), redisURL)
+
 	// services
 	authService := service.NewAuthService(userRepo)
 	appointmentService := service.NewAppointmentService(appointmentRepo)
 	slotService := service.NewSlotService(slotRepo)
-	orgService := service.NewOrganizationService(orgRepo)
-	empService := service.NewEmployeeService(empRepo, orgRepo)
+	orgService := service.NewOrganizationService(orgRepo, redisClient)
+	empService := service.NewEmployeeService(empRepo, orgRepo, redisClient)
 	reviewService := service.NewReviewService(reviewRepo)
 
 	// handlers
