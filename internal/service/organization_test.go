@@ -67,7 +67,7 @@ func (m *mockOrgRepo) Delete(ctx context.Context, id int64) error {
 
 func TestOrgCreateSuccess(t *testing.T) {
 	repo := newMockOrgRepo()
-	svc := NewOrganizationService(repo)
+	svc := NewOrganizationService(repo, nil)
 
 	id, err := svc.Create(context.Background(), "Google", 1)
 	if err != nil {
@@ -80,7 +80,7 @@ func TestOrgCreateSuccess(t *testing.T) {
 
 func TestOrgCreateConflict(t *testing.T) {
 	repo := newMockOrgRepo()
-	svc := NewOrganizationService(repo)
+	svc := NewOrganizationService(repo, nil)
 
 	_, _ = svc.Create(context.Background(), "Dup", 1)
 	_, err := svc.Create(context.Background(), "Dup", 2)
@@ -92,7 +92,7 @@ func TestOrgCreateConflict(t *testing.T) {
 
 func TestOrgUpdate(t *testing.T) {
 	repo := newMockOrgRepo()
-	svc := NewOrganizationService(repo)
+	svc := NewOrganizationService(repo, nil)
 
 	id, _ := svc.Create(context.Background(), "Old", 1)
 

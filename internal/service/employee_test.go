@@ -79,7 +79,7 @@ func (m *mockEmpRepo) Delete(ctx context.Context, id int64) error {
 func TestEmployeeCreateSuccess(t *testing.T) {
 	empRepo := newMockEmpRepo()
 	orgRepo := newMockOrgRepo() // Defined in organization_test.go
-	svc := NewEmployeeService(empRepo, orgRepo)
+	svc := NewEmployeeService(empRepo, orgRepo, nil)
 
 	ctx := context.Background()
 	// Create org to pass existence check
@@ -104,7 +104,7 @@ func TestEmployeeCreateSuccess(t *testing.T) {
 func TestEmployeeCreateNoOrg(t *testing.T) {
 	empRepo := newMockEmpRepo()
 	orgRepo := newMockOrgRepo()
-	svc := NewEmployeeService(empRepo, orgRepo)
+	svc := NewEmployeeService(empRepo, orgRepo, nil)
 
 	emp := &model.Employee{
 		Name:           "John",
@@ -122,7 +122,7 @@ func TestEmployeeCreateNoOrg(t *testing.T) {
 func TestEmployeeConflict(t *testing.T) {
 	empRepo := newMockEmpRepo()
 	orgRepo := newMockOrgRepo()
-	svc := NewEmployeeService(empRepo, orgRepo)
+	svc := NewEmployeeService(empRepo, orgRepo, nil)
 	ctx := context.Background()
 
 	orgID, _ := orgRepo.CreateOrg(ctx, &model.Organization{Name: "Org1"})
